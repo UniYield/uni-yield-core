@@ -2,8 +2,7 @@
 pragma solidity ^0.8.20;
 
 library LibVaultStorage {
-    bytes32 internal constant VAULT_STORAGE_SLOT =
-        keccak256("chainrouter.diamond.vault.storage.v1");
+    bytes32 internal constant VAULT_STORAGE_SLOT = keccak256("chainrouter.diamond.vault.storage.v1");
 
     struct StrategyConfig {
         bool enabled;
