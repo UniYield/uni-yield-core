@@ -35,4 +35,11 @@ library LibErrors {
     // External token operations
     error TokenTransferFailed();
     error TokenApprovalFailed();
+
+    error ArrayLengthMismatch();
+    error AllocationAboveCap(bytes32 id, uint256 attemptedBps, uint256 maxBps);
+    error ExternalCallFailed(bytes32 id);
+    error InsufficientBalance(uint256 available, uint256 required);
+    error InsufficientAllowance(uint256 available, uint256 required);
+    error AlreadyInitialized();
 }
