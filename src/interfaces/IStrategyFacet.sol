@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 interface IStrategyFacet {
     /// @notice Unique id for registry (e.g., keccak256("AAVE_V3_USDC_BASE"))
-    function strategyId() external pure returns (bytes32);
+    function strategyId() external view returns (bytes32);
 
     /// @notice Deposit `assets` of the vault asset into the venue.
     /// @dev Vault calls this via delegatecall through the diamond.

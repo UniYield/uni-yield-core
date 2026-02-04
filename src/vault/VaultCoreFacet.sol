@@ -267,7 +267,7 @@ contract VaultCoreFacet {
 
     function _strategyTotalManagedAssets(bytes32 id) internal view returns (uint256 managed) {
         bytes memory data = abi.encodeWithSelector(IStrategyFacet.totalManagedAssets.selector);
-        bytes memory result = _delegateToStrategy(id, data);
+        bytes memory result = _staticCallStrategy(id, data);
         managed = abi.decode(result, (uint256));
     }
 
@@ -292,10 +292,18 @@ contract VaultCoreFacet {
         emit StrategyWithdrawn(id, assets);
     }
 
-    function _delegateToStrategy(bytes32 id, bytes memory data) internal view returns (bytes memory result) {
+    function _delegateToStrategy(bytes32 id, bytes memory data) internal returns (bytes memory result) {
         address facet = _strategyFacet(id);
         if (facet == address(0)) revert LibErrors.StrategyNotFound(id);
         (bool ok, bytes memory returndata) = facet.delegatecall(data);
+        if (!ok) revert LibErrors.ExternalCallFailed(id);
+        return returndata;
+    }
+
+    function _staticCallStrategy(bytes32 id, bytes memory data) internal view returns (bytes memory result) {
+        address facet = _strategyFacet(id);
+        if (facet == address(0)) revert LibErrors.StrategyNotFound(id);
+        (bool ok, bytes memory returndata) = facet.staticcall(data);
         if (!ok) revert LibErrors.ExternalCallFailed(id);
         return returndata;
     }

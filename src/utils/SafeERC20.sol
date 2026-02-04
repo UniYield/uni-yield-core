@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IERC20} from "../interfaces/IERC20.sol";
-import {LibErrors} from "../vault/LibErrors.sol";
+import {LibErrors} from "../libraries/LibErrors.sol";
 
 library SafeERC20 {
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
