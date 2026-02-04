@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 
-contract OwnershipFacet {
+contract DiamondOwnershipFacet {
     function owner() external view returns (address) {
         return LibDiamond.contractOwner();
     }
