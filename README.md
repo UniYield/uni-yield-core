@@ -1,74 +1,65 @@
-## Foundry
+# UniYield Core
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+ERC-4626 vault built as an EIP-2535 Diamond. One diamond address exposes vault (deposit/withdraw, ERC-20 shares), strategy registry, rebalance, and diamond loupe/ownership. Strategies (Aave, Compound, Morpho) are separate facet contracts; the vault delegatecalls into the active strategy.
 
-Foundry consists of:
+## Layout
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **`src/`**
+  - `UniYieldDiamond.sol` – diamond proxy (fallback delegates to facets).
+  - `diamond/` – DiamondCut, DiamondLoupe, DiamondOwnership.
+  - `vault/` – VaultCoreFacet (ERC-20 + ERC-4626), StrategyRegistryFacet, RebalanceFacet.
+  - `strategies/` – Aave, Compound, Morpho strategy facets (implement `IStrategyFacet`).
+  - `interfaces/` – IVault4626Diamond, IUniYieldDiamond, IStrategyFacet, etc.
+  - `libraries/` – LibDiamond, LibVaultStorage, LibErrors.
+- **`script/`** – DeployDiamond, DeployStrategy, InitVault. See [script/README.md](script/README.md).
+- **`abi/`** – Exported ABI for frontend. See [abi/README.md](abi/README.md).
 
-## Documentation
+## Requirements
 
-https://book.getfoundry.sh/
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) (forge, anvil, cast).
 
-## Usage
+## Commands
 
 ### Build
 
-```shell
-$ forge build
+```bash
+forge build
 ```
-
-### Export ABI (for frontend)
-
-```shell
-$ ./scripts/export-abi.sh
-```
-
-Writes `abi/UniYieldDiamond.json` with the full diamond interface. Use this file and the diamond proxy address in the frontend to call vault, strategy, rebalance, and admin functions.
 
 ### Test
 
-```shell
-$ forge test
+```bash
+forge test
+```
+
+With verbosity:
+
+```bash
+forge test -vvv
 ```
 
 ### Format
 
-```shell
-$ forge fmt
+```bash
+forge fmt
 ```
 
-### Gas Snapshots
+### Export ABI (for frontend)
 
-```shell
-$ forge snapshot
+```bash
+./scripts/export-abi.sh
 ```
 
-### Anvil
-
-```shell
-$ anvil
-```
+Writes `abi/UniYieldDiamond.json`. Use it with the diamond proxy address in the frontend (ethers, viem, etc.). See [abi/README.md](abi/README.md).
 
 ### Deploy
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+1. Deploy diamond and core facets: [script/README.md#DeployDiamond](script/README.md).
+2. Optionally deploy strategy facets: [script/README.md#DeployStrategy](script/README.md).
+3. Initialize vault on the diamond: [script/README.md#InitVault](script/README.md).
 
-### Cast
+## Documentation
 
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- [Foundry Book](https://book.getfoundry.sh/)
+- [EIP-2535 Diamonds](https://eips.ethereum.org/EIPS/eip-2535)
+- [EIP-4626 Tokenized Vaults](https://eips.ethereum.org/EIPS/eip-4626)
