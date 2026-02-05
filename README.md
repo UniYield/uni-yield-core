@@ -21,6 +21,14 @@ https://book.getfoundry.sh/
 $ forge build
 ```
 
+### Export ABI (for frontend)
+
+```shell
+$ ./scripts/export-abi.sh
+```
+
+Writes `abi/UniYieldDiamond.json` with the full diamond interface. Use this file and the diamond proxy address in the frontend to call vault, strategy, rebalance, and admin functions.
+
 ### Test
 
 ```shell

@@ -27,9 +27,7 @@ contract MockStrategyFacetHighRate is IStrategyFacet {
         return 0;
     }
 
-    function strategyWithdraw(
-        uint256
-    ) external pure override returns (uint256) {
+    function strategyWithdraw(uint256) external pure override returns (uint256) {
         return 0;
     }
 

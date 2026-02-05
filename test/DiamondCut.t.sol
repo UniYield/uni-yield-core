@@ -37,25 +37,13 @@ contract DiamondCutTest is Test {
         });
 
         vm.prank(owner);
-        (bool ok, ) = address(diamond).call(
-            abi.encodeWithSelector(
-                IDiamondCut.diamondCut.selector,
-                cuts,
-                address(0),
-                ""
-            )
-        );
+        (bool ok,) =
+            address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
         assertTrue(ok);
 
-        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond))
-            .facets();
+        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond)).facets();
         assertEq(facets.length, 2); // cut + loupe
-        assertEq(
-            IDiamondLoupe(address(diamond)).facetAddress(
-                IDiamondLoupe.facets.selector
-            ),
-            address(loupeFacet)
-        );
+        assertEq(IDiamondLoupe(address(diamond)).facetAddress(IDiamondLoupe.facets.selector), address(loupeFacet));
     }
 
     function test_RevertWhenNonOwnerCallsDiamondCut() public {
@@ -71,13 +59,6 @@ contract DiamondCutTest is Test {
 
         vm.prank(address(0x999));
         vm.expectRevert();
-        address(diamond).call(
-            abi.encodeWithSelector(
-                IDiamondCut.diamondCut.selector,
-                cuts,
-                address(0),
-                ""
-            )
-        );
+        address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
     }
 }

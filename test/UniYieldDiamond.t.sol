@@ -74,12 +74,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
             50, // minSwitchBps 0.5%
             mockStrategyId
         );
-        IVault(address(diamond)).addStrategy(
-            mockStrategyId,
-            true,
-            10_000,
-            10_000
-        );
+        IVault(address(diamond)).addStrategy(mockStrategyId, true, 10_000, 10_000);
         IVault(address(diamond)).setActiveStrategy(mockStrategyId);
         vm.stopPrank();
     }
@@ -91,14 +86,8 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: selectors
         });
-        (bool ok, ) = address(diamond).call(
-            abi.encodeWithSelector(
-                IDiamondCut.diamondCut.selector,
-                cuts,
-                address(0),
-                ""
-            )
-        );
+        (bool ok,) =
+            address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
         require(ok, "diamondCut failed");
     }
 
@@ -120,8 +109,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
     }
 
     function test_Facets() public view {
-        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond))
-            .facets();
+        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond)).facets();
         assertGt(facets.length, 5);
         bool hasLoupe;
         for (uint256 i = 0; i < facets.length; i++) {
@@ -131,28 +119,14 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
     }
 
     function test_FacetAddress() public view {
-        address a = IDiamondLoupe(address(diamond)).facetAddress(
-            DiamondCutFacet.diamondCut.selector
-        );
+        address a = IDiamondLoupe(address(diamond)).facetAddress(DiamondCutFacet.diamondCut.selector);
         assertEq(a, address(cutFacet));
     }
 
     function test_SupportsInterface() public view {
-        assertTrue(
-            IERC165(address(diamond)).supportsInterface(
-                type(IERC165).interfaceId
-            )
-        );
-        assertTrue(
-            IERC165(address(diamond)).supportsInterface(
-                type(IDiamondCut).interfaceId
-            )
-        );
-        assertTrue(
-            IERC165(address(diamond)).supportsInterface(
-                type(IDiamondLoupe).interfaceId
-            )
-        );
+        assertTrue(IERC165(address(diamond)).supportsInterface(type(IERC165).interfaceId));
+        assertTrue(IERC165(address(diamond)).supportsInterface(type(IDiamondCut).interfaceId));
+        assertTrue(IERC165(address(diamond)).supportsInterface(type(IDiamondLoupe).interfaceId));
     }
 
     // ---- Vault ERC20 / metadata ----
@@ -166,15 +140,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
     function test_InitVault_RevertsWhenNotOwner() public {
         vm.prank(user1);
         vm.expectRevert();
-        IVault(address(diamond)).initVault(
-            address(asset),
-            6,
-            "X",
-            "X",
-            6,
-            0,
-            bytes32(0)
-        );
+        IVault(address(diamond)).initVault(address(asset), 6, "X", "X", 6, 0, bytes32(0));
     }
 
     // ---- Vault ERC-4626 deposit / withdraw ----
@@ -209,11 +175,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         asset.approve(address(diamond), amount);
         uint256 shares = IVault(address(diamond)).deposit(amount, user1);
         uint256 assetsOut = IVault(address(diamond)).convertToAssets(shares);
-        uint256 sharesBurned = IVault(address(diamond)).withdraw(
-            assetsOut,
-            user1,
-            user1
-        );
+        uint256 sharesBurned = IVault(address(diamond)).withdraw(assetsOut, user1, user1);
         vm.stopPrank();
         assertEq(sharesBurned, shares);
         assertEq(asset.balanceOf(user1), 1_000_000e6);
@@ -226,11 +188,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         vm.startPrank(user1);
         asset.approve(address(diamond), amount);
         uint256 shares = IVault(address(diamond)).deposit(amount, user1);
-        uint256 assetsOut = IVault(address(diamond)).redeem(
-            shares,
-            user1,
-            user1
-        );
+        uint256 assetsOut = IVault(address(diamond)).redeem(shares, user1, user1);
         vm.stopPrank();
         assertGt(assetsOut, 0);
         assertEq(IVault(address(diamond)).balanceOf(user1), 0);
@@ -260,8 +218,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         bytes32[] memory ids = IVault(address(diamond)).getStrategyIds();
         assertEq(ids.length, 1);
         assertEq(ids[0], mockStrategyId);
-        LibVaultStorage.StrategyConfig memory cfg = IVault(address(diamond))
-            .getStrategyConfig(mockStrategyId);
+        LibVaultStorage.StrategyConfig memory cfg = IVault(address(diamond)).getStrategyConfig(mockStrategyId);
         assertTrue(cfg.enabled);
         assertEq(cfg.targetBps, 10_000);
         assertEq(cfg.maxBps, 10_000);
@@ -276,9 +233,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
     }
 
     function test_PreviewRebalance() public view {
-        (bytes32 fromId, bytes32 toId, uint256 assetsToMove) = IVault(
-            address(diamond)
-        ).previewRebalance();
+        (bytes32 fromId, bytes32 toId, uint256 assetsToMove) = IVault(address(diamond)).previewRebalance();
         assertEq(fromId, mockStrategyId);
         assertEq(toId, mockStrategyId);
         assertEq(assetsToMove, 0);
@@ -290,15 +245,9 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         vm.startPrank(user1);
         asset.approve(address(diamond), amount);
         IVault(address(diamond)).deposit(amount, user1);
-        IVault(address(diamond)).transfer(
-            user2,
-            IVault(address(diamond)).balanceOf(user1)
-        );
+        IVault(address(diamond)).transfer(user2, IVault(address(diamond)).balanceOf(user1));
         vm.stopPrank();
-        assertEq(
-            IVault(address(diamond)).balanceOf(user2),
-            IVault(address(diamond)).totalSupply()
-        );
+        assertEq(IVault(address(diamond)).balanceOf(user2), IVault(address(diamond)).totalSupply());
         assertEq(IVault(address(diamond)).balanceOf(user1), 0);
     }
 
@@ -328,12 +277,7 @@ interface IVault {
         bytes32 activeStrategyId_
     ) external;
 
-    function addStrategy(
-        bytes32 id,
-        bool enabled,
-        uint16 targetBps,
-        uint16 maxBps
-    ) external;
+    function addStrategy(bytes32 id, bool enabled, uint16 targetBps, uint16 maxBps) external;
 
     function setActiveStrategy(bytes32 id) external;
 
@@ -377,16 +321,11 @@ interface IVault {
 
     function getStrategyIds() external view returns (bytes32[] memory);
 
-    function getStrategyConfig(
-        bytes32
-    ) external view returns (LibVaultStorage.StrategyConfig memory);
+    function getStrategyConfig(bytes32) external view returns (LibVaultStorage.StrategyConfig memory);
 
     function rebalance() external;
 
-    function previewRebalance()
-        external
-        view
-        returns (bytes32 fromId, bytes32 toId, uint256 assetsToMove);
+    function previewRebalance() external view returns (bytes32 fromId, bytes32 toId, uint256 assetsToMove);
 }
 
 interface IOwnership {
@@ -416,10 +355,7 @@ contract RebalanceTest is Test, DiamondSelectors {
         _addFacet(address(new DiamondLoupeFacet()), diamondLoupeSelectors());
         _addFacet(address(new DiamondOwnershipFacet()), ownershipSelectors());
         _addFacet(address(new VaultCoreFacet()), vaultCoreSelectors());
-        _addFacet(
-            address(new StrategyRegistryFacet()),
-            strategyRegistrySelectors()
-        );
+        _addFacet(address(new StrategyRegistryFacet()), strategyRegistrySelectors());
         _addFacet(address(new RebalanceFacet()), rebalanceSelectors());
 
         lowRateStrategy = new MockStrategyFacet();
@@ -430,15 +366,7 @@ contract RebalanceTest is Test, DiamondSelectors {
         asset = new MockERC20("Test USDC", "USDC", 6);
         asset.mint(owner, 1_000_000e6);
 
-        IVault(address(diamond)).initVault(
-            address(asset),
-            6,
-            "Vault",
-            "vUSDC",
-            6,
-            50,
-            lowRateId
-        );
+        IVault(address(diamond)).initVault(address(asset), 6, "Vault", "vUSDC", 6, 50, lowRateId);
         IVault(address(diamond)).addStrategy(lowRateId, true, 10_000, 10_000);
         IVault(address(diamond)).addStrategy(highRateId, true, 10_000, 10_000);
         IVault(address(diamond)).setActiveStrategy(lowRateId);
@@ -452,14 +380,8 @@ contract RebalanceTest is Test, DiamondSelectors {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: selectors
         });
-        (bool ok, ) = address(diamond).call(
-            abi.encodeWithSelector(
-                IDiamondCut.diamondCut.selector,
-                cuts,
-                address(0),
-                ""
-            )
-        );
+        (bool ok,) =
+            address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
         require(ok, "diamondCut failed");
     }
 
@@ -473,9 +395,7 @@ contract RebalanceTest is Test, DiamondSelectors {
     }
 
     function test_PreviewRebalance_ShowsSwitch() public view {
-        (bytes32 fromId, bytes32 toId, uint256 assetsToMove) = IVault(
-            address(diamond)
-        ).previewRebalance();
+        (bytes32 fromId, bytes32 toId, uint256 assetsToMove) = IVault(address(diamond)).previewRebalance();
         assertEq(fromId, lowRateId);
         assertEq(toId, highRateId);
         assertEq(assetsToMove, 0);

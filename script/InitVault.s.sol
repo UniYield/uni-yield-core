@@ -19,17 +19,13 @@ contract InitVault is Script {
         uint16 minSwitchBps = uint16(vm.envOr("MIN_SWITCH_BPS", uint256(50)));
 
         uint256 deployerKey = vm.envOr("PRIVATE_KEY", uint256(0));
-        address owner = deployerKey != 0
-            ? vm.addr(deployerKey)
-            : vm.envAddress("CONTRACT_OWNER");
+        address owner = deployerKey != 0 ? vm.addr(deployerKey) : vm.envAddress("CONTRACT_OWNER");
         if (owner == address(0)) owner = address(0x1);
 
         uint256 deployStrategy = vm.envOr("DEPLOY_STRATEGY", uint256(0));
         bytes32 activeStrategyId;
         if (deployStrategy == 0) {
-            activeStrategyId = bytes32(
-                vm.envOr("ACTIVE_STRATEGY_ID", uint256(0))
-            );
+            activeStrategyId = bytes32(vm.envOr("ACTIVE_STRATEGY_ID", uint256(0)));
             require(
                 activeStrategyId != bytes32(0),
                 "Set DEPLOY_STRATEGY=1 or ACTIVE_STRATEGY_ID (strategy facet address as uint256)"
@@ -45,7 +41,7 @@ contract InitVault is Script {
             console.log("AaveStrategyFacet", address(strategy));
         }
 
-        (bool okInit, ) = diamond.call(
+        (bool okInit,) = diamond.call(
             abi.encodeWithSignature(
                 "initVault(address,uint8,string,string,uint8,uint16,bytes32)",
                 asset,
@@ -60,22 +56,13 @@ contract InitVault is Script {
         require(okInit, "initVault failed");
 
         if (deployStrategy != 0) {
-            (bool okAdd, ) = diamond.call(
+            (bool okAdd,) = diamond.call(
                 abi.encodeWithSignature(
-                    "addStrategy(bytes32,bool,uint16,uint16)",
-                    activeStrategyId,
-                    true,
-                    uint16(10_000),
-                    uint16(10_000)
+                    "addStrategy(bytes32,bool,uint16,uint16)", activeStrategyId, true, uint16(10_000), uint16(10_000)
                 )
             );
             require(okAdd, "addStrategy failed");
-            (bool okActive, ) = diamond.call(
-                abi.encodeWithSignature(
-                    "setActiveStrategy(bytes32)",
-                    activeStrategyId
-                )
-            );
+            (bool okActive,) = diamond.call(abi.encodeWithSignature("setActiveStrategy(bytes32)", activeStrategyId));
             require(okActive, "setActiveStrategy failed");
         }
 

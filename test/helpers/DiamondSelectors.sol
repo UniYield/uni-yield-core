@@ -58,11 +58,7 @@ contract DiamondSelectors {
         s[18] = VaultCoreFacet.depositReceived.selector;
     }
 
-    function strategyRegistrySelectors()
-        internal
-        pure
-        returns (bytes4[] memory s)
-    {
+    function strategyRegistrySelectors() internal pure returns (bytes4[] memory s) {
         s = new bytes4[](8);
         s[0] = StrategyRegistryFacet.addStrategy.selector;
         s[1] = StrategyRegistryFacet.removeStrategy.selector;
