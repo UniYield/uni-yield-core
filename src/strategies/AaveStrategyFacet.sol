@@ -14,13 +14,17 @@ contract AaveStrategyFacet is IStrategyFacet {
     bytes32 private immutable STRATEGY_ID;
     IAavePool private immutable POOL;
     address private immutable A_TOKEN;
+    /// @dev Vault address for balance queries when strategy is called via staticcall (assets held by vault).
+    address private immutable VAULT;
 
     /// @param pool_ Aave V3 Pool. Pass address(0) for no-op (e.g. tests).
     /// @param aToken_ aToken for the vault asset. Pass address(0) for no-op.
-    constructor(address pool_, address aToken_) {
+    /// @param vault_ Diamond address for staticcall balance queries. Pass address(0) for delegatecall-only usage.
+    constructor(address pool_, address aToken_, address vault_) {
         STRATEGY_ID = bytes32(uint256(uint160(address(this))));
         POOL = IAavePool(pool_);
         A_TOKEN = aToken_;
+        VAULT = vault_;
     }
 
     function strategyId() external view override returns (bytes32) {
@@ -29,7 +33,8 @@ contract AaveStrategyFacet is IStrategyFacet {
 
     function totalManagedAssets() public view override returns (uint256) {
         if (A_TOKEN == address(0)) return 0;
-        return IERC20(A_TOKEN).balanceOf(address(this));
+        address target = VAULT != address(0) ? VAULT : address(this);
+        return IERC20(A_TOKEN).balanceOf(target);
     }
 
     function rateBps() public view override returns (uint256) {

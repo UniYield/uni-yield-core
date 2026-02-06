@@ -10,7 +10,7 @@ contract CompoundStrategyFacetTest is Test {
     CompoundStrategyFacet strategy;
 
     function setUp() public {
-        strategy = new CompoundStrategyFacet(address(0));
+        strategy = new CompoundStrategyFacet(address(0), address(0));
     }
 
     function test_StrategyId() public view {

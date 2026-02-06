@@ -18,14 +18,17 @@ contract MorphoStrategyFacet is IStrategyFacet {
     address private immutable ORACLE;
     address private immutable IRM;
     uint256 private immutable LLTV;
+    address private immutable VAULT;
 
+    /// @param vault_ Diamond address for staticcall balance queries. Pass address(0) for delegatecall-only.
     constructor(
         address morpho_,
         address loanToken_,
         address collateralToken_,
         address oracle_,
         address irm_,
-        uint256 lltv_
+        uint256 lltv_,
+        address vault_
     ) {
         STRATEGY_ID = bytes32(uint256(uint160(address(this))));
         MORPHO = IMorpho(morpho_);
@@ -34,6 +37,7 @@ contract MorphoStrategyFacet is IStrategyFacet {
         ORACLE = oracle_;
         IRM = irm_;
         LLTV = lltv_;
+        VAULT = vault_;
     }
 
     function strategyId() external view override returns (bytes32) {
@@ -42,7 +46,8 @@ contract MorphoStrategyFacet is IStrategyFacet {
 
     function totalManagedAssets() public view override returns (uint256) {
         if (address(MORPHO) == address(0)) return 0;
-        (uint256 supplyShares,,) = MORPHO.position(_marketId(), address(this));
+        address target = VAULT != address(0) ? VAULT : address(this);
+        (uint256 supplyShares,,) = MORPHO.position(_marketId(), target);
         if (supplyShares == 0) return 0;
         (uint128 totalSupplyAssets, uint128 totalSupplyShares,,,,) = MORPHO.market(_marketId());
         if (totalSupplyShares == 0) return 0;

@@ -13,10 +13,13 @@ contract CompoundStrategyFacet is IStrategyFacet {
 
     bytes32 private immutable STRATEGY_ID;
     IComet private immutable COMET;
+    address private immutable VAULT;
 
-    constructor(address comet_) {
+    /// @param vault_ Diamond address for staticcall balance queries. Pass address(0) for delegatecall-only.
+    constructor(address comet_, address vault_) {
         STRATEGY_ID = bytes32(uint256(uint160(address(this))));
         COMET = IComet(comet_);
+        VAULT = vault_;
     }
 
     function strategyId() external view override returns (bytes32) {
@@ -25,7 +28,8 @@ contract CompoundStrategyFacet is IStrategyFacet {
 
     function totalManagedAssets() public view override returns (uint256) {
         if (address(COMET) == address(0)) return 0;
-        return COMET.balanceOf(address(this));
+        address target = VAULT != address(0) ? VAULT : address(this);
+        return COMET.balanceOf(target);
     }
 
     function rateBps() public view override returns (uint256) {
@@ -51,9 +55,11 @@ contract CompoundStrategyFacet is IStrategyFacet {
     function exitStrategy() public override {
         if (address(COMET) == address(0)) return;
         address asset = COMET.baseToken();
-        uint256 balance = COMET.balanceOf(address(this));
+        address src = VAULT != address(0) ? VAULT : address(this);
+        uint256 balance = COMET.balanceOf(src);
         if (balance > 0) {
-            COMET.withdrawFrom(address(this), address(this), asset, balance);
+            address to = VAULT != address(0) ? VAULT : address(this);
+            COMET.withdrawFrom(src, to, asset, balance);
         }
     }
 
