@@ -25,6 +25,24 @@ contract VaultCoreFacet {
     event VaultInitialized(
         address asset, string name, string symbol, uint8 shareDecimals, uint16 minSwitchBps, bytes32 activeStrategyId
     );
+    event Paused();
+    event Unpaused();
+
+    function pause() external {
+        _enforceOwner();
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        if (vs.paused) return;
+        vs.paused = true;
+        emit Paused();
+    }
+
+    function unpause() external {
+        _enforceOwner();
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        if (!vs.paused) return;
+        vs.paused = false;
+        emit Unpaused();
+    }
 
     function initVault(
         address asset_,
@@ -208,37 +226,34 @@ contract VaultCoreFacet {
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
 
-    function depositReceived(address receiver, uint256 minShares, uint256 deadline) external returns (uint256 shares) {
+    function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
+        external
+        returns (uint256 shares, uint256 assetsReceived)
+    {
         _requireNotPaused();
         if (receiver == address(0)) revert LibErrors.ZeroAddress();
+        if (amount == 0) revert LibErrors.ZeroAssets();
         if (block.timestamp > deadline) revert LibErrors.DeadlineExpired(deadline, block.timestamp);
 
         LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
         IERC20 assetToken = IERC20(vs.asset);
-
-        uint256 idleBefore = assetToken.balanceOf(address(this));
-        uint256 idleAfter = assetToken.balanceOf(address(this));
-        uint256 assetsReceived = idleAfter - idleBefore;
-        if (assetsReceived == 0) {
-            // Assets may have been transferred before this call; treat all idle as received.
-            assetsReceived = idleAfter;
-        }
-        if (assetsReceived == 0) revert LibErrors.ZeroAssets();
+        if (assetToken.balanceOf(address(this)) < amount) revert LibErrors.ZeroAssets();
 
         uint256 totalAssetsBefore = totalAssets();
-        if (totalAssetsBefore >= assetsReceived) {
-            totalAssetsBefore -= assetsReceived;
+        if (totalAssetsBefore >= amount) {
+            totalAssetsBefore -= amount;
         } else {
             totalAssetsBefore = 0;
         }
 
-        shares = _previewDeposit(assetsReceived, totalAssetsBefore, vs.totalSupply);
+        shares = _previewDeposit(amount, totalAssetsBefore, vs.totalSupply);
         if (shares == 0) revert LibErrors.ZeroShares();
         if (shares < minShares) revert LibErrors.SlippageExceeded(minShares, shares);
 
         _mint(receiver, shares);
-        _depositToActiveStrategy(assetsReceived);
+        _depositToActiveStrategy(amount);
 
+        assetsReceived = amount;
         emit DepositReceived(receiver, assetsReceived, shares);
     }
 

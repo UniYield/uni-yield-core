@@ -25,13 +25,13 @@ interface IVault4626Diamond {
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
 
-    // Optional LI.FI-friendly entry
-    function depositReceived(address receiver, uint256 minShares, uint256 deadline)
+    // Optional LI.FI-friendly entry: caller must have transferred `amount` of asset to the vault before calling.
+    function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
         external
         returns (uint256 shares, uint256 assetsReceived);
 
     // Strategy management
-    function addStrategy(bytes32 id, address facet, bool enabled, uint16 targetBps, uint16 maxBps) external;
+    function addStrategy(bytes32 id, bool enabled, uint16 targetBps, uint16 maxBps) external;
     function removeStrategy(bytes32 id) external;
     function setStrategyEnabled(bytes32 id, bool enabled) external;
     function setStrategyTargets(bytes32[] calldata ids, uint16[] calldata targetBps, uint16[] calldata maxBps)
@@ -45,4 +45,8 @@ interface IVault4626Diamond {
     // Rebalance
     function rebalance() external;
     function previewRebalance() external view returns (bytes32 fromId, bytes32 toId, uint256 assetsToMove);
+
+    // Pause (owner only)
+    function pause() external;
+    function unpause() external;
 }
