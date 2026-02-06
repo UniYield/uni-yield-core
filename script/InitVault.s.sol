@@ -36,7 +36,9 @@ contract InitVault is Script {
         if (deployerKey == 0) vm.prank(owner);
 
         if (deployStrategy != 0) {
-            AaveStrategyFacet strategy = new AaveStrategyFacet();
+            address aavePool = vm.envOr("AAVE_POOL", address(0));
+            address aaveAToken = vm.envOr("AAVE_A_TOKEN", address(0));
+            AaveStrategyFacet strategy = new AaveStrategyFacet(aavePool, aaveAToken);
             activeStrategyId = bytes32(uint256(uint160(address(strategy))));
             console.log("AaveStrategyFacet", address(strategy));
         }

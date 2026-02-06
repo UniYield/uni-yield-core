@@ -22,11 +22,6 @@
         "internalType": "bytes32"
       },
       {
-        "name": "facet",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
         "name": "enabled",
         "type": "bool",
         "internalType": "bool"
@@ -208,6 +203,11 @@
         "name": "receiver",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
       },
       {
         "name": "minShares",
@@ -448,6 +448,13 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "pause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -696,6 +703,13 @@
         "internalType": "address"
       }
     ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unpause",
+    "inputs": [],
     "outputs": [],
     "stateMutability": "nonpayable"
   },

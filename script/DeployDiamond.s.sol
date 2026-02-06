@@ -100,7 +100,7 @@ contract DeployDiamond is Script {
     }
 
     function _vaultCoreSelectors() internal pure returns (bytes4[] memory s) {
-        s = new bytes4[](19);
+        s = new bytes4[](21);
         s[0] = VaultCoreFacet.initVault.selector;
         s[1] = VaultCoreFacet.name.selector;
         s[2] = VaultCoreFacet.symbol.selector;
@@ -120,6 +120,8 @@ contract DeployDiamond is Script {
         s[16] = VaultCoreFacet.withdraw.selector;
         s[17] = VaultCoreFacet.redeem.selector;
         s[18] = VaultCoreFacet.depositReceived.selector;
+        s[19] = VaultCoreFacet.pause.selector;
+        s[20] = VaultCoreFacet.unpause.selector;
     }
 
     function _strategyRegistrySelectors() internal pure returns (bytes4[] memory s) {

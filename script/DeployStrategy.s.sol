@@ -15,17 +15,26 @@ contract DeployStrategy is Script {
         if (deployerKey != 0) vm.startBroadcast(deployerKey);
 
         if (keccak256(bytes(which)) == keccak256("aave") || keccak256(bytes(which)) == keccak256("all")) {
-            AaveStrategyFacet a = new AaveStrategyFacet();
+            address aavePool = vm.envOr("AAVE_POOL", address(0));
+            address aaveAToken = vm.envOr("AAVE_A_TOKEN", address(0));
+            AaveStrategyFacet a = new AaveStrategyFacet(aavePool, aaveAToken);
             console.log("AaveStrategyFacet", address(a));
             console.log("AaveStrategyId", uint256(bytes32(uint256(uint160(address(a))))));
         }
         if (keccak256(bytes(which)) == keccak256("compound") || keccak256(bytes(which)) == keccak256("all")) {
-            CompoundStrategyFacet c = new CompoundStrategyFacet();
+            address comet = vm.envOr("COMPOUND_COMET", address(0));
+            CompoundStrategyFacet c = new CompoundStrategyFacet(comet);
             console.log("CompoundStrategyFacet", address(c));
             console.log("CompoundStrategyId", uint256(bytes32(uint256(uint160(address(c))))));
         }
         if (keccak256(bytes(which)) == keccak256("morpho") || keccak256(bytes(which)) == keccak256("all")) {
-            MorphoStrategyFacet m = new MorphoStrategyFacet();
+            address morpho = vm.envOr("MORPHO", address(0));
+            address loanToken = vm.envOr("MORPHO_LOAN_TOKEN", address(0));
+            address collateralToken = vm.envOr("MORPHO_COLLATERAL_TOKEN", address(0));
+            address oracle = vm.envOr("MORPHO_ORACLE", address(0));
+            address irm = vm.envOr("MORPHO_IRM", address(0));
+            uint256 lltv = vm.envOr("MORPHO_LLTV", uint256(0));
+            MorphoStrategyFacet m = new MorphoStrategyFacet(morpho, loanToken, collateralToken, oracle, irm, lltv);
             console.log("MorphoStrategyFacet", address(m));
             console.log("MorphoStrategyId", uint256(bytes32(uint256(uint160(address(m))))));
         }

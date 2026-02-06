@@ -23,12 +23,15 @@ Optional: `CONTRACT_OWNER` – used as diamond owner when `PRIVATE_KEY` is not s
 
 ## DeployStrategy
 
-Deploys strategy facets (Aave, Compound, Morpho). Use the printed strategy address / id when calling `addStrategy` or when initializing the vault.
+Deploys strategy facets (Aave, Compound, Morpho). Use the printed strategy address / id when calling `addStrategy` or when initializing the vault. Pass protocol addresses via env for real integration; omit for no-op (e.g. dry-run).
 
 **Env:**
 
 - `STRATEGY` – `aave` | `compound` | `morpho` | `all` (default: `aave`)
 - `PRIVATE_KEY` – optional; omit for dry-run
+- **Aave:** `AAVE_POOL`, `AAVE_A_TOKEN` (Aave V3 Pool and aToken for the vault asset)
+- **Compound:** `COMPOUND_COMET` (Comet contract; vault asset must equal comet.baseToken())
+- **Morpho:** `MORPHO`, `MORPHO_LOAN_TOKEN`, `MORPHO_COLLATERAL_TOKEN`, `MORPHO_ORACLE`, `MORPHO_IRM`, `MORPHO_LLTV`
 
 ```bash
 # Deploy Aave strategy only
@@ -56,7 +59,7 @@ Initializes the vault on an already-deployed diamond and optionally deploys and 
 - `ASSET_DECIMALS` – default 6
 - `SHARE_DECIMALS` – default 6
 - `MIN_SWITCH_BPS` – default 50 (0.5% min improvement to rebalance)
-- `DEPLOY_STRATEGY=1` – deploy AaveStrategyFacet and use it as the only strategy
+- `DEPLOY_STRATEGY=1` – deploy AaveStrategyFacet and use it as the only strategy (set `AAVE_POOL` and `AAVE_A_TOKEN` for real integration; omit for no-op)
 - `ACTIVE_STRATEGY_ID` – if not using `DEPLOY_STRATEGY`, set to strategy id (strategy facet address as uint256) so `initVault` can set the active strategy
 - `PRIVATE_KEY` – deployer; omit for dry-run
 
