@@ -12,7 +12,7 @@ contract Events {
     event StrategyDeposited(bytes32 indexed strategyId, uint256 assets);
     event StrategyWithdrawn(bytes32 indexed strategyId, uint256 assets);
     event VaultInitialized(
-        address asset, string name, string symbol, uint8 shareDecimals, uint16 minSwitchBps, bytes32 activeStrategyId
+        address asset, string name, string symbol, uint8 decimalsOffset, uint16 minSwitchBps, bytes32 activeStrategyId
     );
     event Paused();
     event Unpaused();

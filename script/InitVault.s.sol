@@ -6,7 +6,7 @@ import {AaveStrategyFacet} from "../src/strategies/AaveStrategyFacet.sol";
 
 /// @notice Initializes the vault on an already-deployed diamond and optionally deploys + registers a strategy.
 /// Set env: DIAMOND_ADDRESS, ASSET_ADDRESS, VAULT_NAME, VAULT_SYMBOL.
-/// Optional: ASSET_DECIMALS (default 6), SHARE_DECIMALS (default 6), MIN_SWITCH_BPS (default 50).
+/// Optional: ASSET_DECIMALS (default 6), DECIMALS_OFFSET (default 0), MIN_SWITCH_BPS (default 50).
 /// If DEPLOY_STRATEGY=1, deploys AaveStrategyFacet and uses it as the initial strategy.
 contract InitVault is Script {
     function run() external {
@@ -15,7 +15,7 @@ contract InitVault is Script {
         string memory name = vm.envString("VAULT_NAME");
         string memory symbol = vm.envString("VAULT_SYMBOL");
         uint8 assetDecimals = uint8(vm.envOr("ASSET_DECIMALS", uint256(6)));
-        uint8 shareDecimals = uint8(vm.envOr("SHARE_DECIMALS", uint256(6)));
+        uint8 decimalsOffset = uint8(vm.envOr("DECIMALS_OFFSET", uint256(0)));
         uint16 minSwitchBps = uint16(vm.envOr("MIN_SWITCH_BPS", uint256(50)));
 
         uint256 deployerKey = vm.envOr("PRIVATE_KEY", uint256(0));
@@ -50,7 +50,7 @@ contract InitVault is Script {
                 assetDecimals,
                 name,
                 symbol,
-                shareDecimals,
+                decimalsOffset,
                 minSwitchBps,
                 activeStrategyId
             )

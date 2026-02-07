@@ -23,7 +23,7 @@ contract VaultCoreFacet {
     event StrategyDeposited(bytes32 indexed strategyId, uint256 assets);
     event StrategyWithdrawn(bytes32 indexed strategyId, uint256 assets);
     event VaultInitialized(
-        address asset, string name, string symbol, uint8 shareDecimals, uint16 minSwitchBps, bytes32 activeStrategyId
+        address asset, string name, string symbol, uint8 decimalsOffset, uint16 minSwitchBps, bytes32 activeStrategyId
     );
     event Paused();
     event Unpaused();
@@ -49,7 +49,7 @@ contract VaultCoreFacet {
         uint8 assetDecimals_,
         string calldata name_,
         string calldata symbol_,
-        uint8 shareDecimals_,
+        uint8 decimalsOffset_,
         uint16 minSwitchBps_,
         bytes32 activeStrategyId_
     ) external {
@@ -63,11 +63,11 @@ contract VaultCoreFacet {
         vs.assetDecimals = assetDecimals_;
         vs.name = name_;
         vs.symbol = symbol_;
-        vs.shareDecimals = shareDecimals_;
+        vs.decimalsOffset = decimalsOffset_;
         vs.minSwitchBps = minSwitchBps_;
         vs.activeStrategyId = activeStrategyId_;
 
-        emit VaultInitialized(asset_, name_, symbol_, shareDecimals_, minSwitchBps_, activeStrategyId_);
+        emit VaultInitialized(asset_, name_, symbol_, decimalsOffset_, minSwitchBps_, activeStrategyId_);
     }
 
     // ERC-20 metadata
@@ -79,8 +79,15 @@ contract VaultCoreFacet {
         return LibVaultStorage.vaultStorage().symbol;
     }
 
+    /// @notice OZ-style: vault decimals = assetDecimals + decimalsOffset
     function decimals() external view returns (uint8) {
-        return LibVaultStorage.vaultStorage().shareDecimals;
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        return vs.assetDecimals + _decimalsOffset();
+    }
+
+    /// @notice Overridable decimals offset (OZ ERC4626 style). Default from storage.
+    function _decimalsOffset() internal view virtual returns (uint8) {
+        return LibVaultStorage.vaultStorage().decimalsOffset;
     }
 
     // ERC-20 surface

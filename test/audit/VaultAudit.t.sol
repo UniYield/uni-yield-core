@@ -38,7 +38,7 @@ contract VaultAuditTest is BaseDiamondTest {
         asset.mint(attacker, 1000e6 + 1); // attacker: 1 wei + donation
         asset.mint(victim, 1000e6);
 
-        initVault(address(asset), 6, "Vault", "vUSDC", 6, 50, mockStrategyId);
+        initVault(address(asset), 6, "Vault", "vUSDC", 0, 50, mockStrategyId);
         addStrategy(mockStrategyId, true, 10_000, 10_000);
         setActiveStrategy(mockStrategyId);
         vm.stopPrank();

@@ -42,7 +42,7 @@ abstract contract BaseDiamondTest is Test, DiamondDeployer {
         asset.mint(user1, 1_000_000e6);
         asset.mint(user2, 1_000_000e6);
 
-        initVault(address(asset), 6, "UniYield Vault", "uvUSDC", 6, 50, mockStrategyId);
+        initVault(address(asset), 6, "UniYield Vault", "uvUSDC", 0, 50, mockStrategyId);
         addStrategy(mockStrategyId, true, 10_000, 10_000);
         setActiveStrategy(mockStrategyId);
         vm.stopPrank();
@@ -53,7 +53,7 @@ abstract contract BaseDiamondTest is Test, DiamondDeployer {
         uint8 assetDecimals_,
         string memory name_,
         string memory symbol_,
-        uint8 shareDecimals_,
+        uint8 decimalsOffset_,
         uint16 minSwitchBps_,
         bytes32 activeStrategyId_
     ) internal {
@@ -64,7 +64,7 @@ abstract contract BaseDiamondTest is Test, DiamondDeployer {
                 assetDecimals_,
                 name_,
                 symbol_,
-                shareDecimals_,
+                decimalsOffset_,
                 minSwitchBps_,
                 activeStrategyId_
             )

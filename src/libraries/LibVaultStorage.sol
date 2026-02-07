@@ -21,7 +21,8 @@ library LibVaultStorage {
         bool paused;
         string name;
         string symbol;
-        uint8 shareDecimals;
+        /// @notice OZ-style decimals offset: vault decimals = assetDecimals + decimalsOffset
+        uint8 decimalsOffset;
         uint256 totalSupply;
         mapping(address => uint256) balances;
         mapping(address => mapping(address => uint256)) allowances;

@@ -37,7 +37,7 @@ contract RebalanceFacetTest is Test, DiamondDeployer {
         asset = new MockERC20("Test USDC", "USDC", 6);
         asset.mint(Actors.OWNER, 1_000_000e6);
 
-        _initVault(address(asset), 6, "Vault", "vUSDC", 6, 50, lowRateId);
+        _initVault(address(asset), 6, "Vault", "vUSDC", 0, 50, lowRateId);
         IVault4626Diamond(address(diamond)).addStrategy(lowRateId, true, 10_000, 10_000);
         IVault4626Diamond(address(diamond)).addStrategy(highRateId, true, 10_000, 10_000);
         IVault4626Diamond(address(diamond)).setActiveStrategy(lowRateId);
@@ -49,7 +49,7 @@ contract RebalanceFacetTest is Test, DiamondDeployer {
         uint8 assetDecimals_,
         string memory name_,
         string memory symbol_,
-        uint8 shareDecimals_,
+        uint8 decimalsOffset_,
         uint16 minSwitchBps_,
         bytes32 activeStrategyId_
     ) internal {
@@ -60,7 +60,7 @@ contract RebalanceFacetTest is Test, DiamondDeployer {
                 assetDecimals_,
                 name_,
                 symbol_,
-                shareDecimals_,
+                decimalsOffset_,
                 minSwitchBps_,
                 activeStrategyId_
             )

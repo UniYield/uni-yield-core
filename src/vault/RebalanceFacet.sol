@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {LibVaultStorage} from "../libraries/LibVaultStorage.sol";
 import {LibErrors} from "../libraries/LibErrors.sol";
+import {LibReentrancyGuard} from "../libraries/LibReentrancyGuard.sol";
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 
@@ -12,6 +13,7 @@ contract RebalanceFacet {
     );
 
     function rebalance() external {
+        LibReentrancyGuard.enter();
         LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
         bytes32 currentId = vs.activeStrategyId;
         if (currentId == bytes32(0) || !_strategyExists(currentId)) revert LibErrors.StrategyNotFound(currentId);
@@ -36,6 +38,7 @@ contract RebalanceFacet {
 
         vs.activeStrategyId = bestId;
         emit Rebalanced(currentId, bestId, assetsMoved, currentRate, bestRate);
+        LibReentrancyGuard.exit();
     }
 
     function previewRebalance() external view returns (bytes32 fromId, bytes32 toId, uint256 assetsToMove) {

@@ -18,18 +18,18 @@ import {MorphoStrategyFacet} from "../../src/strategies/MorphoStrategyFacet.sol"
 import {IERC20} from "../../src/interfaces/IERC20.sol";
 import {IVault4626Diamond} from "../../src/interfaces/IVault4626Diamond.sol";
 
-/// @notice Fork test: vault + Aave V3, Compound V3, Morpho Blue on Ethereum.
-/// Requires RPC_URL in .env (e.g. devnet or mainnet). Protocol addresses from .env or defaults.
+/// @notice Fork test: vault + Aave V3, Compound V3, Morpho Blue. Supports any chain (Ethereum, Base, etc.).
+/// Requires RPC_URL in .env. Set ASSET_ADDRESS and ASSET_WHALE for your chain (or use defaults for Ethereum mainnet).
 /// Morpho test runs only if MORPHO_ORACLE is set (get from docs.morpho.org).
-/// Run: forge test --match-path "test/fork/*.t.sol" -vvv
+/// Run: forge test --match-path "test/fork/*.t.sol" -vvv --profile fork
 contract EthereumIntegrationForkTest is Test {
     UniYieldDiamond diamond;
     address owner = address(0x1);
     address user = address(0x2);
 
-    // Ethereum mainnet defaults (override via .env)
-    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address constant USDC_WHALE = 0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503;
+    // Chain-agnostic: read from .env (defaults for Ethereum mainnet)
+    address asset;
+    address assetWhale;
 
     address aavePool;
     address aaveAToken;
@@ -59,11 +59,14 @@ contract EthereumIntegrationForkTest is Test {
         uint256 forkBlock = vm.envOr("FORK_BLOCK", uint256(20_000_000));
         vm.createSelectFork(rpcUrl, forkBlock);
 
+        asset = vm.envOr("ASSET_ADDRESS", address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48));
+        assetWhale = vm.envOr("ASSET_WHALE", address(0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503));
+
         aavePool = vm.envOr("AAVE_POOL", address(0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2));
         aaveAToken = vm.envOr("AAVE_A_TOKEN", address(0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c));
         compoundComet = vm.envOr("COMPOUND_COMET", address(0xc3d688B66703497DAA19211EEdff47f25384cdc3));
         morpho = vm.envOr("MORPHO", address(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb));
-        morphoLoanToken = vm.envOr("MORPHO_LOAN_TOKEN", USDC);
+        morphoLoanToken = vm.envOr("MORPHO_LOAN_TOKEN", asset);
         morphoCollateralToken = vm.envOr("MORPHO_COLLATERAL_TOKEN", address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
         morphoOracle = vm.envOr("MORPHO_ORACLE", address(0));
         morphoIrm = vm.envOr("MORPHO_IRM", address(0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC));
@@ -106,11 +109,11 @@ contract EthereumIntegrationForkTest is Test {
         (bool ok,) = address(diamond).call(
             abi.encodeWithSignature(
                 "initVault(address,uint8,string,string,uint8,uint16,bytes32)",
-                USDC,
+                asset,
                 6,
                 "UniYield USDC",
                 "uvUSDC",
-                6,
+                0,
                 50,
                 aaveStrategyId
             )
@@ -138,8 +141,12 @@ contract EthereumIntegrationForkTest is Test {
     }
 
     function _fundUser(uint256 amount) internal {
-        vm.prank(USDC_WHALE);
-        IERC20(USDC).transfer(user, amount);
+        uint256 whaleBalance = IERC20(asset).balanceOf(assetWhale);
+        if (whaleBalance < amount) {
+            vm.skip(true); // ASSET_WHALE has insufficient balance for this chain – set ASSET_WHALE in .env
+        }
+        vm.prank(assetWhale);
+        IERC20(asset).transfer(user, amount);
     }
 
     function test_AaveV3_DepositWithdraw() public {
@@ -148,7 +155,7 @@ contract EthereumIntegrationForkTest is Test {
         _fundUser(amount);
 
         vm.startPrank(user);
-        IERC20(USDC).approve(address(diamond), amount);
+        IERC20(asset).approve(address(diamond), amount);
         uint256 shares = IVault4626Diamond(address(diamond)).deposit(amount, user);
         vm.stopPrank();
 
@@ -156,10 +163,10 @@ contract EthereumIntegrationForkTest is Test {
         assertGe(IVault4626Diamond(address(diamond)).totalAssets(), amount - 1); // allow 1 wei rounding from protocol
         assertEq(IVault4626Diamond(address(diamond)).balanceOf(user), shares);
 
-        uint256 assetsBefore = IERC20(USDC).balanceOf(user);
+        uint256 assetsBefore = IERC20(asset).balanceOf(user);
         vm.prank(user);
         IVault4626Diamond(address(diamond)).redeem(shares, user, user);
-        uint256 assetsAfter = IERC20(USDC).balanceOf(user);
+        uint256 assetsAfter = IERC20(asset).balanceOf(user);
         assertGe(assetsAfter - assetsBefore, amount - 1); // allow 1 wei rounding
     }
 
@@ -173,7 +180,7 @@ contract EthereumIntegrationForkTest is Test {
         vm.stopPrank();
 
         vm.startPrank(user);
-        IERC20(USDC).approve(address(diamond), amount);
+        IERC20(asset).approve(address(diamond), amount);
         uint256 shares = IVault4626Diamond(address(diamond)).deposit(amount, user);
         vm.stopPrank();
 
@@ -182,7 +189,7 @@ contract EthereumIntegrationForkTest is Test {
 
         vm.prank(user);
         IVault4626Diamond(address(diamond)).redeem(shares, user, user);
-        assertGe(IERC20(USDC).balanceOf(user), amount - 1);
+        assertGe(IERC20(asset).balanceOf(user), amount - 1);
     }
 
     function test_MorphoBlue_DepositWithdraw() public {
@@ -198,7 +205,7 @@ contract EthereumIntegrationForkTest is Test {
         vm.stopPrank();
 
         vm.startPrank(user);
-        IERC20(USDC).approve(address(diamond), amount);
+        IERC20(asset).approve(address(diamond), amount);
         uint256 shares = IVault4626Diamond(address(diamond)).deposit(amount, user);
         vm.stopPrank();
 
@@ -207,7 +214,7 @@ contract EthereumIntegrationForkTest is Test {
 
         vm.prank(user);
         IVault4626Diamond(address(diamond)).redeem(shares, user, user);
-        assertGe(IERC20(USDC).balanceOf(user), amount - 1);
+        assertGe(IERC20(asset).balanceOf(user), amount - 1);
     }
 
     function test_Rebalance_SwitchStrategy() public {
@@ -216,7 +223,7 @@ contract EthereumIntegrationForkTest is Test {
         _fundUser(amount);
 
         vm.startPrank(user);
-        IERC20(USDC).approve(address(diamond), amount);
+        IERC20(asset).approve(address(diamond), amount);
         uint256 shares = IVault4626Diamond(address(diamond)).deposit(amount, user);
         vm.stopPrank();
 
@@ -231,7 +238,7 @@ contract EthereumIntegrationForkTest is Test {
 
         vm.prank(user);
         IVault4626Diamond(address(diamond)).redeem(shares, user, user);
-        assertGe(IERC20(USDC).balanceOf(user), amount - 1);
+        assertGe(IERC20(asset).balanceOf(user), amount - 1);
     }
 
     function _loupeSelectors() internal pure returns (bytes4[] memory s) {

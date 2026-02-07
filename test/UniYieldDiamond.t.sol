@@ -70,7 +70,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
             6,
             "UniYield Vault",
             "uvUSDC",
-            6,
+            0,
             50, // minSwitchBps 0.5%
             mockStrategyId
         );
@@ -140,7 +140,7 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
     function test_InitVault_RevertsWhenNotOwner() public {
         vm.prank(user1);
         vm.expectRevert();
-        IVault(address(diamond)).initVault(address(asset), 6, "X", "X", 6, 0, bytes32(0));
+        IVault(address(diamond)).initVault(address(asset), 6, "X", "X", 0, 0, bytes32(0));
     }
 
     // ---- Vault ERC-4626 deposit / withdraw ----
@@ -322,7 +322,7 @@ interface IVault {
         uint8 assetDecimals_,
         string calldata name_,
         string calldata symbol_,
-        uint8 shareDecimals_,
+        uint8 decimalsOffset_,
         uint16 minSwitchBps_,
         bytes32 activeStrategyId_
     ) external;
@@ -419,7 +419,7 @@ contract RebalanceTest is Test, DiamondSelectors {
         asset = new MockERC20("Test USDC", "USDC", 6);
         asset.mint(owner, 1_000_000e6);
 
-        IVault(address(diamond)).initVault(address(asset), 6, "Vault", "vUSDC", 6, 50, lowRateId);
+        IVault(address(diamond)).initVault(address(asset), 6, "Vault", "vUSDC", 0, 50, lowRateId);
         IVault(address(diamond)).addStrategy(lowRateId, true, 10_000, 10_000);
         IVault(address(diamond)).addStrategy(highRateId, true, 10_000, 10_000);
         IVault(address(diamond)).setActiveStrategy(lowRateId);
