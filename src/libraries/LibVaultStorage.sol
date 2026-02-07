@@ -4,6 +4,11 @@ pragma solidity ^0.8.20;
 library LibVaultStorage {
     bytes32 internal constant STORAGE_SLOT = keccak256("uniyield.vault.storage.v1");
 
+    /// @notice Offset for virtual shares/assets to mitigate ERC-4626 inflation/donation attack.
+    /// OZ-style: shares = assets * (totalSupply + offset) / (totalAssets + 1)
+    uint256 internal constant VIRTUAL_SHARES_OFFSET = 1e6;
+    uint256 internal constant VIRTUAL_ASSETS_OFFSET = 1;
+
     struct StrategyConfig {
         bool enabled;
         uint16 targetBps;

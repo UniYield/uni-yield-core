@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {LibVaultStorage} from "../libraries/LibVaultStorage.sol";
 import {LibErrors} from "../libraries/LibErrors.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
+import {LibReentrancyGuard} from "../libraries/LibReentrancyGuard.sol";
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 import {SafeERC20} from "../utils/SafeERC20.sol";
@@ -141,7 +142,51 @@ contract VaultCoreFacet {
         return _previewRedeem(shares, totalAssets(), vs.totalSupply);
     }
 
+    /// @notice ERC-4626: preview shares for deposit
+    function previewDeposit(uint256 assets) external view returns (uint256) {
+        return _previewDeposit(assets, totalAssets(), LibVaultStorage.vaultStorage().totalSupply);
+    }
+
+    /// @notice ERC-4626: preview assets for mint
+    function previewMint(uint256 shares) external view returns (uint256) {
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        return _previewMint(shares, totalAssets(), vs.totalSupply);
+    }
+
+    /// @notice ERC-4626: preview shares for withdraw
+    function previewWithdraw(uint256 assets) external view returns (uint256) {
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        return _previewWithdraw(assets, totalAssets(), vs.totalSupply);
+    }
+
+    /// @notice ERC-4626: preview assets for redeem
+    function previewRedeem(uint256 shares) external view returns (uint256) {
+        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
+        return _previewRedeem(shares, totalAssets(), vs.totalSupply);
+    }
+
+    /// @notice ERC-4626: max deposit (no limit)
+    function maxDeposit(address) external pure returns (uint256) {
+        return type(uint256).max;
+    }
+
+    /// @notice ERC-4626: max mint (no limit)
+    function maxMint(address) external pure returns (uint256) {
+        return type(uint256).max;
+    }
+
+    /// @notice ERC-4626: max withdraw for owner
+    function maxWithdraw(address owner) external view returns (uint256) {
+        return convertToAssets(LibVaultStorage.vaultStorage().balances[owner]);
+    }
+
+    /// @notice ERC-4626: max redeem for owner
+    function maxRedeem(address owner) external view returns (uint256) {
+        return LibVaultStorage.vaultStorage().balances[owner];
+    }
+
     function deposit(uint256 assets, address receiver) external returns (uint256 shares) {
+        LibReentrancyGuard.enter();
         _requireNotPaused();
         if (receiver == address(0)) revert LibErrors.ZeroAddress();
         if (assets == 0) revert LibErrors.ZeroAssets();
@@ -158,9 +203,11 @@ contract VaultCoreFacet {
         _depositToActiveStrategy(assets);
 
         emit Deposit(msg.sender, receiver, assets, shares);
+        LibReentrancyGuard.exit();
     }
 
     function mint(uint256 shares, address receiver) external returns (uint256 assets) {
+        LibReentrancyGuard.enter();
         _requireNotPaused();
         if (receiver == address(0)) revert LibErrors.ZeroAddress();
         if (shares == 0) revert LibErrors.ZeroShares();
@@ -176,9 +223,11 @@ contract VaultCoreFacet {
         _depositToActiveStrategy(assets);
 
         emit Deposit(msg.sender, receiver, assets, shares);
+        LibReentrancyGuard.exit();
     }
 
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares) {
+        LibReentrancyGuard.enter();
         _requireNotPaused();
         if (receiver == address(0) || owner == address(0)) revert LibErrors.ZeroAddress();
         if (assets == 0) revert LibErrors.ZeroAssets();
@@ -200,9 +249,11 @@ contract VaultCoreFacet {
 
         IERC20(vs.asset).safeTransfer(receiver, assets);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
+        LibReentrancyGuard.exit();
     }
 
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets) {
+        LibReentrancyGuard.enter();
         _requireNotPaused();
         if (receiver == address(0) || owner == address(0)) revert LibErrors.ZeroAddress();
         if (shares == 0) revert LibErrors.ZeroShares();
@@ -224,12 +275,14 @@ contract VaultCoreFacet {
 
         IERC20(vs.asset).safeTransfer(receiver, assets);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
+        LibReentrancyGuard.exit();
     }
 
     function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
         external
         returns (uint256 shares, uint256 assetsReceived)
     {
+        LibReentrancyGuard.enter();
         _requireNotPaused();
         if (receiver == address(0)) revert LibErrors.ZeroAddress();
         if (amount == 0) revert LibErrors.ZeroAssets();
@@ -255,6 +308,7 @@ contract VaultCoreFacet {
 
         assetsReceived = amount;
         emit DepositReceived(receiver, assetsReceived, shares);
+        LibReentrancyGuard.exit();
     }
 
     // Internal helpers
@@ -323,20 +377,24 @@ contract VaultCoreFacet {
         return returndata;
     }
 
+    /// @dev OZ-style virtual shares/assets to mitigate ERC-4626 donation/inflation attack.
+    /// shares = assets * (totalSupply + offset) / (totalAssets + 1)
     function _previewDeposit(uint256 assets, uint256 totalAssets_, uint256 totalSupply_)
         internal
         pure
         returns (uint256)
     {
-        if (totalSupply_ == 0) return assets;
-        if (totalAssets_ == 0) return 0;
-        return (assets * totalSupply_) / totalAssets_;
+        uint256 supply = totalSupply_ + LibVaultStorage.VIRTUAL_SHARES_OFFSET;
+        uint256 assets_ = totalAssets_ + LibVaultStorage.VIRTUAL_ASSETS_OFFSET;
+        if (assets_ == 0) return 0;
+        return (assets * supply) / assets_;
     }
 
     function _previewMint(uint256 shares, uint256 totalAssets_, uint256 totalSupply_) internal pure returns (uint256) {
-        if (totalSupply_ == 0) return shares;
-        if (totalAssets_ == 0) return 0;
-        return _mulDivUp(shares, totalAssets_, totalSupply_);
+        uint256 supply = totalSupply_ + LibVaultStorage.VIRTUAL_SHARES_OFFSET;
+        uint256 assets_ = totalAssets_ + LibVaultStorage.VIRTUAL_ASSETS_OFFSET;
+        if (supply == 0) return 0;
+        return _mulDivUp(shares, assets_, supply);
     }
 
     function _previewWithdraw(uint256 assets, uint256 totalAssets_, uint256 totalSupply_)
@@ -344,9 +402,10 @@ contract VaultCoreFacet {
         pure
         returns (uint256)
     {
-        if (totalSupply_ == 0) return assets;
-        if (totalAssets_ == 0) return 0;
-        return _mulDivUp(assets, totalSupply_, totalAssets_);
+        uint256 supply = totalSupply_ + LibVaultStorage.VIRTUAL_SHARES_OFFSET;
+        uint256 assets_ = totalAssets_ + LibVaultStorage.VIRTUAL_ASSETS_OFFSET;
+        if (assets_ == 0) return 0;
+        return _mulDivUp(assets, supply, assets_);
     }
 
     function _previewRedeem(uint256 shares, uint256 totalAssets_, uint256 totalSupply_)
@@ -354,9 +413,10 @@ contract VaultCoreFacet {
         pure
         returns (uint256)
     {
-        if (totalSupply_ == 0) return shares;
-        if (totalAssets_ == 0) return 0;
-        return (shares * totalAssets_) / totalSupply_;
+        uint256 supply = totalSupply_ + LibVaultStorage.VIRTUAL_SHARES_OFFSET;
+        uint256 assets_ = totalAssets_ + LibVaultStorage.VIRTUAL_ASSETS_OFFSET;
+        if (supply == 0) return 0;
+        return (shares * assets_) / supply;
     }
 
     function _mulDivUp(uint256 a, uint256 b, uint256 denominator) internal pure returns (uint256) {

@@ -36,7 +36,7 @@ contract DiamondSelectors {
     }
 
     function vaultCoreSelectors() internal pure returns (bytes4[] memory s) {
-        s = new bytes4[](21);
+        s = new bytes4[](29);
         s[0] = VaultCoreFacet.initVault.selector;
         s[1] = VaultCoreFacet.name.selector;
         s[2] = VaultCoreFacet.symbol.selector;
@@ -58,6 +58,14 @@ contract DiamondSelectors {
         s[18] = VaultCoreFacet.depositReceived.selector;
         s[19] = VaultCoreFacet.pause.selector;
         s[20] = VaultCoreFacet.unpause.selector;
+        s[21] = VaultCoreFacet.previewDeposit.selector;
+        s[22] = VaultCoreFacet.previewMint.selector;
+        s[23] = VaultCoreFacet.previewWithdraw.selector;
+        s[24] = VaultCoreFacet.previewRedeem.selector;
+        s[25] = VaultCoreFacet.maxDeposit.selector;
+        s[26] = VaultCoreFacet.maxMint.selector;
+        s[27] = VaultCoreFacet.maxWithdraw.selector;
+        s[28] = VaultCoreFacet.maxRedeem.selector;
     }
 
     function strategyRegistrySelectors() internal pure returns (bytes4[] memory s) {
