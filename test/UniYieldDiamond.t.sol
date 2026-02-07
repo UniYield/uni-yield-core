@@ -212,68 +212,6 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         assertEq(IVault(address(diamond)).convertToShares(amount), shares);
     }
 
-    function test_DepositReceived() public {
-        uint256 amount = 500e6;
-        uint256 minShares = 1;
-        uint256 deadline = block.timestamp + 3600;
-        vm.startPrank(user1);
-        asset.transfer(address(diamond), amount);
-        (uint256 shares, uint256 assetsReceived) =
-            IVault(address(diamond)).depositReceived(user1, amount, minShares, deadline);
-        vm.stopPrank();
-        assertGt(shares, 0);
-        assertEq(assetsReceived, amount);
-        assertEq(IVault(address(diamond)).balanceOf(user1), shares);
-        assertEq(IVault(address(diamond)).totalSupply(), shares);
-    }
-
-    function test_DepositReceived_AfterDeposit() public {
-        vm.prank(user1);
-        asset.approve(address(diamond), 1000e6);
-        vm.prank(user1);
-        IVault(address(diamond)).deposit(1000e6, user1);
-        uint256 amount = 300e6;
-        vm.prank(user2);
-        asset.transfer(address(diamond), amount);
-        uint256 minShares = IVault(address(diamond)).convertToShares(amount) - 1;
-        uint256 deadline = block.timestamp + 3600;
-        vm.prank(user2);
-        (uint256 shares, uint256 assetsReceived) =
-            IVault(address(diamond)).depositReceived(user2, amount, minShares, deadline);
-        assertEq(assetsReceived, amount);
-        assertGt(shares, 0);
-        assertEq(IVault(address(diamond)).balanceOf(user2), shares);
-    }
-
-    function test_DepositReceived_RevertsWhenInsufficientIdle() public {
-        vm.prank(user1);
-        asset.approve(address(diamond), 1000e6);
-        vm.prank(user1);
-        IVault(address(diamond)).deposit(1000e6, user1);
-        uint256 amount = 2000e6;
-        uint256 deadline = block.timestamp + 3600;
-        vm.prank(user2);
-        vm.expectRevert();
-        IVault(address(diamond)).depositReceived(user2, amount, 0, deadline);
-    }
-
-    function test_DepositReceived_RevertsWhenDeadlineExpired() public {
-        vm.prank(user1);
-        asset.transfer(address(diamond), 100e6);
-        vm.prank(user1);
-        vm.expectRevert();
-        IVault(address(diamond)).depositReceived(user1, 100e6, 0, block.timestamp - 1);
-    }
-
-    function test_DepositReceived_RevertsWhenSlippage() public {
-        vm.prank(user1);
-        asset.transfer(address(diamond), 100e6);
-        uint256 minShares = type(uint256).max;
-        vm.prank(user1);
-        vm.expectRevert();
-        IVault(address(diamond)).depositReceived(user1, 100e6, minShares, block.timestamp + 3600);
-    }
-
     // ---- Pause ----
     function test_Pause_Unpause() public {
         vm.prank(owner);
@@ -313,16 +251,6 @@ contract UniYieldDiamondTest is Test, DiamondSelectors {
         vm.prank(user1);
         vm.expectRevert();
         IVault(address(diamond)).redeem(50e6, user1, user1);
-    }
-
-    function test_Pause_RevertsDepositReceived() public {
-        vm.prank(user1);
-        asset.transfer(address(diamond), 100e6);
-        vm.prank(owner);
-        IVault(address(diamond)).pause();
-        vm.prank(user1);
-        vm.expectRevert();
-        IVault(address(diamond)).depositReceived(user1, 100e6, 0, block.timestamp + 3600);
     }
 
     function test_Pause_RevertsWhenNotOwner() public {
@@ -438,10 +366,6 @@ interface IVault {
     function withdraw(uint256, address, address) external returns (uint256);
 
     function redeem(uint256, address, address) external returns (uint256);
-
-    function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
-        external
-        returns (uint256 shares, uint256 assetsReceived);
 
     function activeStrategyId() external view returns (bytes32);
 

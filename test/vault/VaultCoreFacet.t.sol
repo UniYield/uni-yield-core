@@ -74,18 +74,6 @@ contract VaultCoreFacetTest is BaseDiamondTest {
         IVault4626Diamond(address(diamond)).deposit(0, user1);
     }
 
-    function test_DepositReceived() public {
-        uint256 amount = 500e6;
-        vm.prank(user1);
-        asset.transfer(address(diamond), amount);
-        vm.prank(user1);
-        (uint256 shares, uint256 assetsReceived) =
-            IVault4626Diamond(address(diamond)).depositReceived(user1, amount, 0, block.timestamp + 3600);
-        assertGt(shares, 0);
-        assertEq(assetsReceived, amount);
-        assertEq(IVault4626Diamond(address(diamond)).balanceOf(user1), shares);
-    }
-
     function test_Pause_Unpause() public {
         vm.prank(owner);
         IVault4626Diamond(address(diamond)).pause();

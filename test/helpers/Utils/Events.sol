@@ -9,7 +9,6 @@ contract Events {
     event Withdraw(
         address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares
     );
-    event DepositReceived(address indexed receiver, uint256 assets, uint256 shares);
     event StrategyDeposited(bytes32 indexed strategyId, uint256 assets);
     event StrategyWithdrawn(bytes32 indexed strategyId, uint256 assets);
     event VaultInitialized(

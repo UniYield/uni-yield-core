@@ -12,9 +12,8 @@ UniYield is a single-asset, yield-optimizing vault that deploys user deposits in
 
 ## User flows
 
-- **Deposit** – `deposit(assets, receiver)` or `mint(shares, receiver)`: user sends the underlying asset to the vault, receives share tokens; the vault deposits the assets into the active strategy.
+- **Deposit** – `deposit(assets, receiver)` or `mint(shares, receiver)`: user sends the underlying asset to the vault, receives share tokens; the vault deposits the assets into the active strategy. Aggregators (e.g. LiFi) can call `deposit` directly.
 - **Withdraw** – `withdraw(assets, receiver, owner)` or `redeem(shares, receiver, owner)`: user burns shares and receives the underlying asset; the vault withdraws from the active strategy if idle balance is insufficient.
-- **Aggregators** – `depositReceived(receiver, minShares, deadline)` supports a flow where the user (or router) transfers the asset to the vault and then calls this; the vault mints shares for the received amount (with slippage and deadline checks).
 
 ## Admin and strategy management
 

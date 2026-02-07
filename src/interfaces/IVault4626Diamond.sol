@@ -25,11 +25,6 @@ interface IVault4626Diamond {
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
 
-    // Optional LI.FI-friendly entry: caller must have transferred `amount` of asset to the vault before calling.
-    function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
-        external
-        returns (uint256 shares, uint256 assetsReceived);
-
     // Strategy management
     function addStrategy(bytes32 id, bool enabled, uint16 targetBps, uint16 maxBps) external;
     function removeStrategy(bytes32 id) external;

@@ -7,7 +7,7 @@ import {MockStrategyFacet} from "../helpers/Mocks/MockStrategyFacet.sol";
 import {LibErrors} from "../../src/libraries/LibErrors.sol";
 import {IVault4626Diamond} from "../../src/interfaces/IVault4626Diamond.sol";
 
-/// @notice Audit regression tests: donation attack, rounding, reentrancy, depositReceived abuse
+/// @notice Audit regression tests: donation attack, rounding, reentrancy
 contract VaultAuditTest is BaseDiamondTest {
     address attacker;
     address victim;
@@ -115,25 +115,6 @@ contract VaultAuditTest is BaseDiamondTest {
         vm.expectRevert(abi.encodeWithSelector(LibErrors.ExternalCallFailed.selector, maliciousId));
         vm.prank(victim);
         IVault4626Diamond(address(diamond)).deposit(100e6, victim);
-    }
-
-    /// @notice depositReceived: anyone can mint shares for assets already in vault (by design for LI.FI)
-    function test_DepositReceived_AnyoneCanMintForIdleBalance() public {
-        vm.prank(victim);
-        asset.approve(address(diamond), 100e6);
-        vm.prank(victim);
-        IVault4626Diamond(address(diamond)).deposit(100e6, victim);
-
-        vm.prank(attacker);
-        asset.transfer(address(diamond), 50e6);
-
-        vm.prank(attacker);
-        (uint256 shares,) = IVault4626Diamond(address(diamond)).depositReceived(
-            attacker, 50e6, 0, block.timestamp + 3600
-        );
-
-        assertGt(shares, 0, "Attacker gets shares for transferred assets");
-        assertEq(IVault4626Diamond(address(diamond)).balanceOf(attacker), shares);
     }
 
     /// @notice Invariant: totalSupply proportional to totalAssets

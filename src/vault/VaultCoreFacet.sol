@@ -20,7 +20,6 @@ contract VaultCoreFacet {
         address indexed caller, address indexed receiver, address indexed owner, uint256 assets, uint256 shares
     );
 
-    event DepositReceived(address indexed receiver, uint256 assets, uint256 shares);
     event StrategyDeposited(bytes32 indexed strategyId, uint256 assets);
     event StrategyWithdrawn(bytes32 indexed strategyId, uint256 assets);
     event VaultInitialized(
@@ -275,39 +274,6 @@ contract VaultCoreFacet {
 
         IERC20(vs.asset).safeTransfer(receiver, assets);
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
-        LibReentrancyGuard.exit();
-    }
-
-    function depositReceived(address receiver, uint256 amount, uint256 minShares, uint256 deadline)
-        external
-        returns (uint256 shares, uint256 assetsReceived)
-    {
-        LibReentrancyGuard.enter();
-        _requireNotPaused();
-        if (receiver == address(0)) revert LibErrors.ZeroAddress();
-        if (amount == 0) revert LibErrors.ZeroAssets();
-        if (block.timestamp > deadline) revert LibErrors.DeadlineExpired(deadline, block.timestamp);
-
-        LibVaultStorage.VaultStorage storage vs = LibVaultStorage.vaultStorage();
-        IERC20 assetToken = IERC20(vs.asset);
-        if (assetToken.balanceOf(address(this)) < amount) revert LibErrors.ZeroAssets();
-
-        uint256 totalAssetsBefore = totalAssets();
-        if (totalAssetsBefore >= amount) {
-            totalAssetsBefore -= amount;
-        } else {
-            totalAssetsBefore = 0;
-        }
-
-        shares = _previewDeposit(amount, totalAssetsBefore, vs.totalSupply);
-        if (shares == 0) revert LibErrors.ZeroShares();
-        if (shares < minShares) revert LibErrors.SlippageExceeded(minShares, shares);
-
-        _mint(receiver, shares);
-        _depositToActiveStrategy(amount);
-
-        assetsReceived = amount;
-        emit DepositReceived(receiver, assetsReceived, shares);
         LibReentrancyGuard.exit();
     }
 

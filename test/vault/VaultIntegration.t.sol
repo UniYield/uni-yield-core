@@ -36,11 +36,11 @@ contract VaultIntegrationTest is BaseDiamondTest {
         assertEq(IVault4626Diamond(address(diamond)).totalSupply(), IVault4626Diamond(address(diamond)).balanceOf(user1) + IVault4626Diamond(address(diamond)).balanceOf(user2));
     }
 
-    function test_Flow_DepositReceivedThenWithdraw() public {
+    function test_Flow_DepositThenWithdraw() public {
         vm.prank(user1);
-        asset.transfer(address(diamond), 1000e6);
+        asset.approve(address(diamond), 1000e6);
         vm.prank(user1);
-        (uint256 shares,) = IVault4626Diamond(address(diamond)).depositReceived(user1, 1000e6, 0, block.timestamp + 3600);
+        uint256 shares = IVault4626Diamond(address(diamond)).deposit(1000e6, user1);
         assertGt(shares, 0);
         vm.prank(user1);
         IVault4626Diamond(address(diamond)).redeem(shares, user1, user1);
