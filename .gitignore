@@ -12,6 +12,3 @@ docs/
 
 # Dotenv file
 .env
-
-# NPM (OpenZeppelin via @openzeppelin/contracts)
-node_modules/

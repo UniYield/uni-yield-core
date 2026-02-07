@@ -38,6 +38,12 @@ UniYield is a single-asset, yield-optimizing vault that deploys user deposits in
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (forge, anvil, cast).
 
+### Install dependencies
+
+```bash
+forge install OpenZeppelin/openzeppelin-contracts
+```
+
 ## Commands
 
 ### Build
