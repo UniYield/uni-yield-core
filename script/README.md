@@ -92,3 +92,19 @@ forge script script/InitVault.s.sol:InitVault --sig "run()" --broadcast --rpc-ur
 ```
 
 After init with `DEPLOY_STRATEGY=1`, you still need to call `addStrategy` and `setActiveStrategy` on the diamond; the script does that when `DEPLOY_STRATEGY=1`.
+
+---
+
+## Verify
+
+Verify deployed contracts on Etherscan/Basescan:
+
+```bash
+# Set addresses from DeployDiamond output, then:
+export CHAIN=base
+export ETHERSCAN_API_KEY=...
+# ... (see .env.example for all required vars)
+./scripts/verify.sh
+```
+
+Required env: `CHAIN`, `ETHERSCAN_API_KEY`, `DIAMOND_ADDRESS`, `DIAMOND_CUT_FACET`, `CONTRACT_OWNER`, and all facet addresses (`DIAMOND_LOUPE_FACET`, `DIAMOND_OWNERSHIP_FACET`, `VAULT_CORE_FACET`, `STRATEGY_REGISTRY_FACET`, `REBALANCE_FACET`). Strategy facets are optional.
