@@ -25,6 +25,16 @@ interface IVault4626Diamond {
     function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares);
     function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
 
+    // ERC-4626 optional view
+    function previewDeposit(uint256 assets) external view returns (uint256);
+    function previewMint(uint256 shares) external view returns (uint256);
+    function previewWithdraw(uint256 assets) external view returns (uint256);
+    function previewRedeem(uint256 shares) external view returns (uint256);
+    function maxDeposit(address receiver) external view returns (uint256);
+    function maxMint(address receiver) external view returns (uint256);
+    function maxWithdraw(address owner) external view returns (uint256);
+    function maxRedeem(address owner) external view returns (uint256);
+
     // Strategy management
     function addStrategy(bytes32 id, bool enabled, uint16 targetBps, uint16 maxBps) external;
     function removeStrategy(bytes32 id) external;

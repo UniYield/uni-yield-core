@@ -1,0 +1,29 @@
+{
+  "name": "uni-yield-core",
+  "version": "1.0.0",
+  "description": "UniYield is a single-asset, yield-optimizing vault that deploys user deposits into one lending strategy at a time (Aave, Compound, Morpho). The vault is implemented as an [EIP-2535 Diamond](https://eips.ethereum.org/EIPS/eip-2535) and exposes an [ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) interface: users deposit the underlying asset (e.g. USDC), receive share tokens, and can redeem shares for assets at any time. Yield is earned by routing assets to the strategy that currently offers the best rate; a permissionless rebalance moves funds when another strategy’s rate is higher by a configurable threshold.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UniYield/uni-yield-core.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/UniYield/uni-yield-core/issues"
+  },
+  "homepage": "https://github.com/UniYield/uni-yield-core#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0"
+  }
+}

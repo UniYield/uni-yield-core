@@ -3,6 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 script = "script"
+remappings = [
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"
+]
 
 [profile.fork]
 src = "src"

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
-import {IERC20} from "../interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {LibVaultStorage} from "../libraries/LibVaultStorage.sol";
-import {SafeERC20} from "../utils/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IAavePool} from "../interfaces/external/IAavePool.sol";
 
 /// @notice Aave V3 strategy: supplies vault asset to Aave, receives aTokens. Deploy with pool and aToken for the vault asset.
@@ -45,7 +45,7 @@ contract AaveStrategyFacet is IStrategyFacet {
         if (assets == 0) return;
         address asset = LibVaultStorage.vaultStorage().asset;
         if (asset == address(0)) return;
-        SafeERC20.safeApprove(IERC20(asset), address(POOL), assets);
+        SafeERC20.forceApprove(IERC20(asset), address(POOL), assets);
         POOL.supply(asset, assets, address(this), 0);
     }
 

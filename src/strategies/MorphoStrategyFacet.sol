@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
-import {IERC20} from "../interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {LibVaultStorage} from "../libraries/LibVaultStorage.sol";
-import {SafeERC20} from "../utils/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IMorpho, MarketParams} from "../interfaces/external/IMorpho.sol";
 
 /// @notice Morpho Blue strategy: supplies vault asset as loan token to a Morpho market. Deploy with morpho + market params (loanToken must be vault asset).
@@ -60,7 +60,7 @@ contract MorphoStrategyFacet is IStrategyFacet {
 
     function depositToStrategy(uint256 assets) public override {
         if (assets == 0 || address(MORPHO) == address(0)) return;
-        SafeERC20.safeApprove(IERC20(LOAN_TOKEN), address(MORPHO), assets);
+        SafeERC20.forceApprove(IERC20(LOAN_TOKEN), address(MORPHO), assets);
         MarketParams memory params = _marketParams();
         MORPHO.supply(params, assets, 0, address(this), "");
     }

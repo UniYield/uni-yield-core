@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
-import {IERC20} from "../interfaces/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {LibVaultStorage} from "../libraries/LibVaultStorage.sol";
-import {SafeERC20} from "../utils/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IComet} from "../interfaces/external/IComet.sol";
 
 /// @notice Compound V3 Comet strategy: supplies vault asset (base token) to Comet. Deploy with Comet address; vault asset must equal comet.baseToken().
@@ -42,7 +42,7 @@ contract CompoundStrategyFacet is IStrategyFacet {
     function depositToStrategy(uint256 assets) public override {
         if (assets == 0 || address(COMET) == address(0)) return;
         address asset = COMET.baseToken();
-        SafeERC20.safeApprove(IERC20(asset), address(COMET), assets);
+        SafeERC20.forceApprove(IERC20(asset), address(COMET), assets);
         COMET.supplyFrom(address(this), address(this), asset, assets);
     }
 

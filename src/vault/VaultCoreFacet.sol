@@ -6,8 +6,8 @@ import {LibErrors} from "../libraries/LibErrors.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import {LibReentrancyGuard} from "../libraries/LibReentrancyGuard.sol";
 import {IStrategyFacet} from "../interfaces/IStrategyFacet.sol";
-import {IERC20} from "../interfaces/IERC20.sol";
-import {SafeERC20} from "../utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract VaultCoreFacet {
     using SafeERC20 for IERC20;
