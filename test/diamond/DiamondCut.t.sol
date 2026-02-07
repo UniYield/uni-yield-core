@@ -52,7 +52,7 @@ contract DiamondCutTest is Test, DiamondDeployer {
 
         vm.prank(Actors.STRANGER);
         vm.expectRevert(LibDiamond.NotContractOwner.selector);
-        address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
+        IDiamondCut(address(diamond)).diamondCut(cuts, address(0), "");
     }
 
     function test_ReplaceFacet() public {

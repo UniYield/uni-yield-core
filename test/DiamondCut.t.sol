@@ -59,6 +59,6 @@ contract DiamondCutTest is Test {
 
         vm.prank(address(0x999));
         vm.expectRevert();
-        address(diamond).call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
+        IDiamondCut(address(diamond)).diamondCut(cuts, address(0), "");
     }
 }

@@ -37,7 +37,7 @@ contract AaveStrategyFacet is IStrategyFacet {
         return IERC20(A_TOKEN).balanceOf(target);
     }
 
-    function rateBps() public view override returns (uint256) {
+    function rateBps() public pure override returns (uint256) {
         return 0;
     }
 
@@ -84,7 +84,7 @@ contract AaveStrategyFacet is IStrategyFacet {
         return totalManagedAssets();
     }
 
-    function strategyRateBps() external view override returns (uint256) {
+    function strategyRateBps() external pure override returns (uint256) {
         return rateBps();
     }
 

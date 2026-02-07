@@ -54,7 +54,7 @@ contract MorphoStrategyFacet is IStrategyFacet {
         return uint256(supplyShares) * totalSupplyAssets / totalSupplyShares;
     }
 
-    function rateBps() public view override returns (uint256) {
+    function rateBps() public pure override returns (uint256) {
         return 0;
     }
 
@@ -101,7 +101,7 @@ contract MorphoStrategyFacet is IStrategyFacet {
         return totalManagedAssets();
     }
 
-    function strategyRateBps() external view override returns (uint256) {
+    function strategyRateBps() external pure override returns (uint256) {
         return rateBps();
     }
 

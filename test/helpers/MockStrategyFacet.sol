@@ -10,11 +10,11 @@ contract MockStrategyFacet is IStrategyFacet {
         return bytes32(uint256(uint160(address(this))));
     }
 
-    function totalManagedAssets() public view override returns (uint256) {
+    function totalManagedAssets() public pure override returns (uint256) {
         return 0;
     }
 
-    function rateBps() public view override returns (uint256) {
+    function rateBps() public pure override returns (uint256) {
         return 100; // 1% so rebalance can prefer it over 0
     }
 
@@ -38,11 +38,11 @@ contract MockStrategyFacet is IStrategyFacet {
         return 0;
     }
 
-    function strategyTotalAssets() external view override returns (uint256) {
+    function strategyTotalAssets() external pure override returns (uint256) {
         return totalManagedAssets();
     }
 
-    function strategyRateBps() external view override returns (uint256) {
+    function strategyRateBps() external pure override returns (uint256) {
         return rateBps();
     }
 
