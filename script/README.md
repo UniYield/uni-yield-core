@@ -14,8 +14,10 @@ forge script script/DeployDiamond.s.sol:DeployDiamond --sig "run()"
 
 ```bash
 export PRIVATE_KEY=0x...
-forge script script/DeployDiamond.s.sol:DeployDiamond --sig "run()" --broadcast --rpc-url <RPC_URL>
+forge script script/DeployDiamond.s.sol:DeployDiamond --sig "run()" --broadcast --rpc-url <RPC_URL> --fork-url <RPC_URL>
 ```
+
+> **Important:** `--fork-url` is required so simulation runs against the real chain state (including the deployer's nonce). Without it, simulation uses nonce 0 and the diamondCut transactions will revert due to address mismatch.
 
 Optional: `CONTRACT_OWNER` – used as diamond owner when `PRIVATE_KEY` is not set (simulation only). With `PRIVATE_KEY`, owner is `vm.addr(PRIVATE_KEY)`.
 
@@ -35,10 +37,10 @@ Deploys strategy facets (Aave, Compound, Morpho). Use the printed strategy addre
 
 ```bash
 # Deploy Aave strategy only
-forge script script/DeployStrategy.s.sol:DeployStrategy --sig "run()" --broadcast --rpc-url <RPC_URL>
+forge script script/DeployStrategy.s.sol:DeployStrategy --sig "run()" --broadcast --rpc-url <RPC_URL> --fork-url <RPC_URL>
 
 # Deploy all strategies
-STRATEGY=all forge script script/DeployStrategy.s.sol:DeployStrategy --sig "run()" --broadcast --rpc-url <RPC_URL>
+STRATEGY=all forge script script/DeployStrategy.s.sol:DeployStrategy --sig "run()" --broadcast --rpc-url <RPC_URL> --fork-url <RPC_URL>
 ```
 
 ---
@@ -73,7 +75,7 @@ export VAULT_SYMBOL="uvUSDC"
 export DEPLOY_STRATEGY=1
 export PRIVATE_KEY=0x...
 
-forge script script/InitVault.s.sol:InitVault --sig "run()" --broadcast --rpc-url <RPC_URL>
+forge script script/InitVault.s.sol:InitVault --sig "run()" --broadcast --rpc-url <RPC_URL> --fork-url <RPC_URL>
 ```
 
 **Example (init with an already-deployed strategy):**
@@ -86,7 +88,7 @@ export VAULT_SYMBOL="uvUSDC"
 export ACTIVE_STRATEGY_ID=<strategy_facet_address_as_uint256>
 export PRIVATE_KEY=0x...
 
-forge script script/InitVault.s.sol:InitVault --sig "run()" --broadcast --rpc-url <RPC_URL>
+forge script script/InitVault.s.sol:InitVault --sig "run()" --broadcast --rpc-url <RPC_URL> --fork-url <RPC_URL>
 ```
 
 After init with `DEPLOY_STRATEGY=1`, you still need to call `addStrategy` and `setActiveStrategy` on the diamond; the script does that when `DEPLOY_STRATEGY=1`.

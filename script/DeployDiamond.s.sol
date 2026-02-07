@@ -26,7 +26,10 @@ contract DeployDiamond is Script {
         }
 
         DiamondCutFacet cutFacet = new DiamondCutFacet();
-        UniYieldDiamond diamond = new UniYieldDiamond(owner_, address(cutFacet));
+        UniYieldDiamond diamond = new UniYieldDiamond(
+            owner_,
+            address(cutFacet)
+        );
         diamond_ = address(diamond);
 
         DiamondLoupeFacet loupeFacet = new DiamondLoupeFacet();
@@ -36,31 +39,76 @@ contract DeployDiamond is Script {
         RebalanceFacet rebalanceFacet = new RebalanceFacet();
 
         if (deployerKey != 0) {
-            vm.broadcast(deployerKey);
-            _diamondCut(diamond_, address(loupeFacet), _loupeSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.broadcast(deployerKey);
-            _diamondCut(diamond_, address(ownershipFacet), _ownershipSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.broadcast(deployerKey);
-            _diamondCut(diamond_, address(vaultCoreFacet), _vaultCoreSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.broadcast(deployerKey);
             _diamondCut(
-                diamond_, address(strategyRegistryFacet), _strategyRegistrySelectors(), IDiamondCut.FacetCutAction.Add
+                diamond_,
+                address(loupeFacet),
+                _loupeSelectors(),
+                IDiamondCut.FacetCutAction.Add
             );
-            vm.broadcast(deployerKey);
-            _diamondCut(diamond_, address(rebalanceFacet), _rebalanceSelectors(), IDiamondCut.FacetCutAction.Add);
+
+            _diamondCut(
+                diamond_,
+                address(ownershipFacet),
+                _ownershipSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+
+            _diamondCut(
+                diamond_,
+                address(vaultCoreFacet),
+                _vaultCoreSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+
+            _diamondCut(
+                diamond_,
+                address(strategyRegistryFacet),
+                _strategyRegistrySelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+
+            _diamondCut(
+                diamond_,
+                address(rebalanceFacet),
+                _rebalanceSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
         } else {
             vm.prank(owner_);
-            _diamondCut(diamond_, address(loupeFacet), _loupeSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.prank(owner_);
-            _diamondCut(diamond_, address(ownershipFacet), _ownershipSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.prank(owner_);
-            _diamondCut(diamond_, address(vaultCoreFacet), _vaultCoreSelectors(), IDiamondCut.FacetCutAction.Add);
-            vm.prank(owner_);
             _diamondCut(
-                diamond_, address(strategyRegistryFacet), _strategyRegistrySelectors(), IDiamondCut.FacetCutAction.Add
+                diamond_,
+                address(loupeFacet),
+                _loupeSelectors(),
+                IDiamondCut.FacetCutAction.Add
             );
             vm.prank(owner_);
-            _diamondCut(diamond_, address(rebalanceFacet), _rebalanceSelectors(), IDiamondCut.FacetCutAction.Add);
+            _diamondCut(
+                diamond_,
+                address(ownershipFacet),
+                _ownershipSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+            vm.prank(owner_);
+            _diamondCut(
+                diamond_,
+                address(vaultCoreFacet),
+                _vaultCoreSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+            vm.prank(owner_);
+            _diamondCut(
+                diamond_,
+                address(strategyRegistryFacet),
+                _strategyRegistrySelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
+            vm.prank(owner_);
+            _diamondCut(
+                diamond_,
+                address(rebalanceFacet),
+                _rebalanceSelectors(),
+                IDiamondCut.FacetCutAction.Add
+            );
         }
 
         if (deployerKey != 0) vm.stopBroadcast();
@@ -75,12 +123,26 @@ contract DeployDiamond is Script {
         console.log("RebalanceFacet", address(rebalanceFacet));
     }
 
-    function _diamondCut(address diamond, address facet, bytes4[] memory selectors, IDiamondCut.FacetCutAction action)
-        internal
-    {
+    function _diamondCut(
+        address diamond,
+        address facet,
+        bytes4[] memory selectors,
+        IDiamondCut.FacetCutAction action
+    ) internal {
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);
-        cuts[0] = IDiamondCut.FacetCut({facetAddress: facet, action: action, functionSelectors: selectors});
-        (bool ok,) = diamond.call(abi.encodeWithSelector(IDiamondCut.diamondCut.selector, cuts, address(0), ""));
+        cuts[0] = IDiamondCut.FacetCut({
+            facetAddress: facet,
+            action: action,
+            functionSelectors: selectors
+        });
+        (bool ok, ) = diamond.call(
+            abi.encodeWithSelector(
+                IDiamondCut.diamondCut.selector,
+                cuts,
+                address(0),
+                ""
+            )
+        );
         require(ok, "diamondCut failed");
     }
 
@@ -124,7 +186,11 @@ contract DeployDiamond is Script {
         s[20] = VaultCoreFacet.unpause.selector;
     }
 
-    function _strategyRegistrySelectors() internal pure returns (bytes4[] memory s) {
+    function _strategyRegistrySelectors()
+        internal
+        pure
+        returns (bytes4[] memory s)
+    {
         s = new bytes4[](8);
         s[0] = StrategyRegistryFacet.addStrategy.selector;
         s[1] = StrategyRegistryFacet.removeStrategy.selector;
